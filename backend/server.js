@@ -1,115 +1,100 @@
 // server.js
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import { pool, initDB } from "./db.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { pool, initDB } from "./db.js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
-
-// --- Middlewares ---
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// --- Servir frontend ---
+// Caminho absoluto (para servir frontend)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use(express.static(path.join(__dirname, "public"))); // assume que seu HTML/JS/CSS estão em pasta "public"
 
-// --- Inicializar DB e start server ---
-const PORT = process.env.PORT || 3000;
+// Servir os arquivos estáticos (frontend)
+app.use(express.static(path.join(__dirname, "public")));
 
+// Inicializa banco
 initDB()
-  .then(() => {
-    console.log("📦 Banco PostgreSQL inicializado!");
-    app.listen(PORT, () => console.log(`✅ Servidor rodando em https://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error("❌ Erro ao inicializar banco:", err);
-  });
+  .then(() => console.log("✅ Banco de dados inicializado"))
+  .catch((err) => console.error("❌ Erro ao inicializar o banco:", err));
 
-// --- Rotas ---
-// Retorna todas as mesas
-app.get("/mesas", async (req, res) => {
+// Rotas API -----------------------------------------------
+
+// Obter todas as mesas
+app.get("/api/mesas", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT numero, status FROM mesas ORDER BY numero ASC");
-    res.json(rows);
+    const result = await pool.query("SELECT * FROM mesas ORDER BY numero ASC");
+    res.json(result.rows);
   } catch (err) {
-    console.error("Erro ao buscar mesas:", err);
     res.status(500).json({ error: "Erro ao buscar mesas" });
   }
 });
 
-// Retorna pedidos de uma mesa
-app.get("/mesas/:numero", async (req, res) => {
+// Obter pedidos de uma mesa
+app.get("/api/pedidos/:mesa", async (req, res) => {
+  const mesa = req.params.mesa;
   try {
-    const numero = parseInt(req.params.numero);
-    const { rows } = await pool.query(
-      "SELECT produto, quantidade, preco, obs FROM pedidos WHERE mesa = $1 ORDER BY id ASC",
-      [numero]
-    );
-    res.json({ pedidos: rows });
+    const result = await pool.query("SELECT * FROM pedidos WHERE mesa = $1", [mesa]);
+    res.json(result.rows);
   } catch (err) {
-    console.error("Erro ao buscar pedidos da mesa:", err);
-    res.status(500).json({ error: "Erro ao carregar pedidos da mesa" });
+    res.status(500).json({ error: "Erro ao buscar pedidos" });
   }
 });
 
-// Adicionar pedido
-app.post("/mesas/:numero/pedidos", async (req, res) => {
+// Criar pedido
+app.post("/api/pedidos", async (req, res) => {
+  const { mesa, produto, quantidade, preco, obs } = req.body;
   try {
-    const numero = parseInt(req.params.numero);
-    const { produto, quantidade, preco, obs } = req.body;
-
     await pool.query(
       "INSERT INTO pedidos (mesa, produto, quantidade, preco, obs) VALUES ($1, $2, $3, $4, $5)",
-      [numero, produto, quantidade, preco, obs]
+      [mesa, produto, quantidade, preco, obs]
     );
-
-    await pool.query("UPDATE mesas SET status = 'ocupada' WHERE numero = $1", [numero]);
-    res.json({ success: true });
+    await pool.query("UPDATE mesas SET status = 'ocupada' WHERE numero = $1", [mesa]);
+    res.json({ message: "Pedido adicionado" });
   } catch (err) {
-    console.error("Erro ao adicionar pedido:", err);
     res.status(500).json({ error: "Erro ao adicionar pedido" });
   }
 });
 
-// Fechar mesa (estado "fechamento")
-app.post("/mesas/:numero/fechar", async (req, res) => {
+// Remover pedido
+app.delete("/api/pedidos/:id", async (req, res) => {
+  const id = req.params.id;
   try {
-    const numero = parseInt(req.params.numero);
-    await pool.query("UPDATE mesas SET status = 'fechamento' WHERE numero = $1", [numero]);
-    res.json({ success: true });
+    await pool.query("DELETE FROM pedidos WHERE id = $1", [id]);
+    res.json({ message: "Pedido removido" });
   } catch (err) {
-    console.error("Erro ao fechar mesa:", err);
-    res.status(500).json({ error: "Erro ao fechar mesa" });
+    res.status(500).json({ error: "Erro ao remover pedido" });
   }
 });
 
-// Mesa paga (limpa pedidos e libera mesa)
-app.post("/mesas/:numero/paga", async (req, res) => {
+// Limpar mesa
+app.post("/api/mesas/:mesa/liberar", async (req, res) => {
+  const mesa = req.params.mesa;
   try {
-    const numero = parseInt(req.params.numero);
-    await pool.query("DELETE FROM pedidos WHERE mesa = $1", [numero]);
-    await pool.query("UPDATE mesas SET status = 'livre' WHERE numero = $1", [numero]);
-    res.json({ success: true });
+    await pool.query("DELETE FROM pedidos WHERE mesa = $1", [mesa]);
+    await pool.query("UPDATE mesas SET status = 'livre' WHERE numero = $1", [mesa]);
+    res.json({ message: "Mesa liberada" });
   } catch (err) {
-    console.error("Erro ao pagar mesa:", err);
-    res.status(500).json({ error: "Erro ao pagar mesa" });
+    res.status(500).json({ error: "Erro ao liberar mesa" });
   }
 });
 
-// Simulação de impressão
-app.post("/imprimir", (req, res) => {
-  console.log("🖨️ Pedido:", req.body);
-  res.json({ status: "ok" });
+// Fallback — serve o index.html para qualquer rota não reconhecida
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.post("/imprimir_comanda", (req, res) => {
-  console.log("🖨️ Comanda completa:", req.body);
-  res.json({ status: "ok" });
+// ----------------------------------------------------------
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando em:`);
+  console.log(`   🌐 Local: http://localhost:${PORT}`);
+  console.log(`   🔗 Render: ${process.env.RENDER_EXTERNAL_URL || "aguardando URL do Render..."}`);
 });
