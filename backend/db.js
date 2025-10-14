@@ -1,0 +1,46 @@
+// db.js
+import pkg from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config(); // Carrega variáveis do .env
+
+const { Pool } = pkg;
+
+export const pool = new Pool({
+  host: process.env.PGHOST,
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
+  port: process.env.PGPORT,
+});
+
+export async function initDB() {
+  // Criar tabela de mesas
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mesas (
+      numero INT PRIMARY KEY,
+      status VARCHAR(20) DEFAULT 'livre'
+    );
+  `);
+
+  // Criar tabela de pedidos
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS pedidos (
+      id SERIAL PRIMARY KEY,
+      mesa INT REFERENCES mesas(numero),
+      produto VARCHAR(255),
+      quantidade INT,
+      preco NUMERIC(10,2),
+      obs TEXT
+    );
+  `);
+
+  // Inserir 100 mesas se não existirem
+  for (let i = 1; i <= 100; i++) {
+    await pool.query(`
+      INSERT INTO mesas(numero, status)
+      VALUES ($1, 'livre')
+      ON CONFLICT (numero) DO NOTHING
+    `, [i]);
+  }
+}
