@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Caixa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Mesas Paraiso das Aguas</h1>
+  <div class="grid" id="grid"></div>
+
+  <div class="modal" id="menuModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">X</button>
+      <h2 id="mesaTitulo">Mesa</h2>
+
+      <div id="menuPrincipal" class="menu-group">
+        <button class="menu-btn" onclick="abrirCategoria('bebidas')">Bebidas</button>
+        <button class="menu-btn" onclick="abrirCategoria('caipirinha')">Caipirinha/Caipiroska</button>
+        <button class="menu-btn" onclick="abrirCategoria('pasteis')">Pasteis</button>
+        <button class="menu-btn" onclick="abrirCategoria('sucos')">Sucos</button>
+        <button class="menu-btn" onclick="abrirCategoria('drinks')">Drinks Com</button>
+        <button class="menu-btn" onclick="abrirCategoria('petiscossemfritas')">Petiscos Sem fritas</button>
+        <button class="menu-btn" onclick="abrirCategoria('petiscoscomfritas')">Petiscos Com fritas e fritas</button>
+        <button class="menu-btn" onclick="abrirCategoria('almocop2')">Almoço Para 2</button>
+        <button class="menu-btn" onclick="abrirCategoria('almocop3')">Almoço Para 3</button>
+        <button class="menu-btn" onclick="selecionarProduto('mistao 2/3 pessoas R$130,00')">Mistao 2/3 Pessoas</button>
+        <button class="menu-btn" onclick="selecionarProduto('mistao 4/5 pessoas R$150,00')">Mistao 4/5 Pessoas</button>
+        <button class="menu-btn" onclick="selecionarProduto('mistao 7/8 pessoas R$200,00')">Mistao 7/8 Pessoas</button>
+        <button class="menu-btn" onclick="selecionarProduto('cadeira R$10,00')">Cadeira</button>
+        <button class="menu-btn" onclick="selecionarProduto('Guarda-sol R$15,00')">Guarda-sol</button>
+        <button class="menu-btn" id="fecharMesaBtn">Fechar Mesa</button>
+      </div>
+
+      <!-- Submenus -->
+      <div id="submenuBebidas" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Refrigerante Lata R$7,00')">Refrigerante Lata</button>
+        <button class="menu-btn" onclick="selecionarProduto('Refrigerante 1 litro R$15,00')">Refrigerante 1 litro</button>
+        <button class="menu-btn" onclick="selecionarProduto('Água c/ gas R$6,00')">Água c/ gas</button>
+        <button class="menu-btn" onclick="selecionarProduto('Água s/ gas R$3,00')">Água s/ gas</button>
+        <button class="menu-btn" onclick="selecionarProduto('Água de coco R$6,00')">Água de coco</button>
+        <button class="menu-btn" onclick="selecionarProduto('Heineken Lata R$10,00')">Heineken Lata</button>
+        <button class="menu-btn" onclick="selecionarProduto('Heineken Zero R$12,00')">Heineken Zero</button>
+        <button class="menu-btn" onclick="selecionarProduto('Budweiser Lata R$10,00')">Budweiser Lata</button>
+        <button class="menu-btn" onclick="selecionarProduto('Skol R$9,00')">Skol</button>
+        <button class="menu-btn" onclick="selecionarProduto('Itaipava R$8,00')">Itaipava</button>
+        <button class="menu-btn" onclick="selecionarProduto('Brahma Shopp R$9,00')">Brahma Shopp</button>
+        <button class="menu-btn" onclick="selecionarProduto('Brahma Zero R$8,00')">Brahma Zero</button>
+        <button class="menu-btn" onclick="selecionarProduto('Brahma Duplo Malte R$8,00')">Brahma Duplo Malte</button>
+        <button class="menu-btn" onclick="selecionarProduto('Devassa R$9,00')">Devassa</button>
+        <button class="menu-btn" onclick="selecionarProduto('Amstel R$10,00')">Amstel</button>
+      </div>
+
+      <div id="submenuCaipirinha" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Limao R$20,00')">Limao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Manga R$20,00')">Manga</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Acerola R$20,00')">Acerola</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Goiaba R$20,00')">Goiaba</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Morango R$20,00')">Morango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Caju R$20,00')">Caju</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Graviola R$20,00')">Graviola</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Maracuja R$20,00')">Maracuja</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Caja R$20,00')">Caja</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Abacaxi R$20,00')">Abacaxi</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Seriguela R$25,00')">Seriguela</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Kiwi R$25,00')">Kiwi</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Pitaia R$25,00')">Pitaia</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Umbu R$20,00')">Umbu</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi Drink no Abacaxi R$40,00')">Drink no Abacaxi</button>
+        <button class="menu-btn" onclick="selecionarProduto('Caipi 4ta Caipi Gratis Limao R$0,00')">4ta Caipi Gratis Limao</button>
+      </div>
+
+      <div id="submenuPasteis" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Queijo R$13,00')">Queijo</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Queijo e catupiry R$20,00')">Queijo e catupiry</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Carne R$15,00')">Carne</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Calabresa R$13,00')">Calabresa</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Queijo e presunto R$15,00')">Queijo e presunto</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Frango R$15,00')">Frango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Carne com queijo R$20,00')">Carne com queijo</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Frango catupiry R$20,00')">Frango catupiry</button>
+        <button class="menu-btn" onclick="selecionarProduto('Pastel Camarao catupiry R$22,00')">Camarao catupiry</button>
+      </div>
+
+      <div id="submenuDrinksCom" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Gin R$30,00')">Gin</button>
+        <button class="menu-btn" onclick="selecionarProduto('Smirnoff R$35,00')">Smirnoff</button>
+        <button class="menu-btn" onclick="selecionarProduto('Orloff R$35,00')">Orloff</button>
+        <button class="menu-btn" onclick="selecionarProduto('Absolut R$40,00')">Absolut</button>
+      </div>
+
+      <div id="submenuPetiscosSemFritas" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('cebola empanada R$40,00')">Porção de cebola empanada</button>
+        <button class="menu-btn" onclick="selecionarProduto('Frango a passarinho R$70,00')">Frango a passarinho</button>
+        <button class="menu-btn" onclick="selecionarProduto('Isca de frango R$70,00')">Isca de frango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Isca de peixe R$80,00')">Isca de peixe</button>
+        <button class="menu-btn" onclick="selecionarProduto('Camarão acebolado R$80,00')">Camarão acebolado</button>
+        <button class="menu-btn" onclick="selecionarProduto('Camarão empanado R$80,00')">Camarão empanado</button>
+        <button class="menu-btn" onclick="selecionarProduto('Peixe inteiro R$80,00')">Peixe inteiro</button>
+        <button class="menu-btn" onclick="selecionarProduto('Filé de carne R$70,00')">Filé de carne</button>
+        <button class="menu-btn" onclick="selecionarProduto('Carne de sol R$70,00')">Carne de sol</button>
+        <button class="menu-btn" onclick="selecionarProduto('Filé de frango R$70,00')">Filé de frango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Porção calabresa R$50,00')">Porção calabresa</button>
+      </div>
+
+      <div id="submenuPetiscosComFritas" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Batata frita R$35,00')">Batata frita</button>
+        <button class="menu-btn" onclick="selecionarProduto('Macaxeria frita R$35,00')">Macaxeria frita</button>
+        <button class="menu-btn" onclick="selecionarProduto('cebola empanada R$40,00')">Porção de cebola empanada</button>
+        <button class="menu-btn" onclick="selecionarProduto('Frango a passarinho R$85,00')">Frango a passarinho</button>
+        <button class="menu-btn" onclick="selecionarProduto('Isca de frango R$85,00')">Isca de frango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Isca de peixe R$95,00')">Isca de peixe</button>
+        <button class="menu-btn" onclick="selecionarProduto('Camarão acebolado R$95,00')">Camarão acebolado</button>
+        <button class="menu-btn" onclick="selecionarProduto('Camarão empanado R$95,00')">Camarão empanado</button>
+        <button class="menu-btn" onclick="selecionarProduto('Peixe inteiro R$95,00')">Peixe inteiro</button>
+        <button class="menu-btn" onclick="selecionarProduto('Filé de carne R$85,00')">Filé de carne</button>
+        <button class="menu-btn" onclick="selecionarProduto('Carne de sol R$85,00')">Carne de sol</button>
+        <button class="menu-btn" onclick="selecionarProduto('Filé de frango R$85,00')">Filé de frango</button>
+        <button class="menu-btn" onclick="selecionarProduto('Porção calabresa R$70,00')">Porção calabresa</button>
+      </div>
+
+      <div id="submenuAlmocoP2" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº1 R$100,00')">Almoço Nº1 File de frango com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº2 R$100.00')">Almoço Nº2 Frango a passarinho com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº3 R$100,00')">Almoço Nº3 Camarao acebolado com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº4 R$100,00')">Almoço Nº4 File de camarao empanado com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº5 R$100,00')">Almoço Nº5 Peixe inteira com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº6 R$100,00')">Almoço Nº6 Isca de peixe com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº7 R$100,00')">Almoço Nº7 File de carne ou carne de sol com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº8 R$100,00')">Almoço Nº8 Camaraozada, arroz e feijao</button>
+      </div>
+
+      <div id="submenuAlmocoP3" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº1 R$120,00')">Almoço Nº1 File de frango com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº2 R$120.00')">Almoço Nº2 Frango a passarinho com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº3 R$120,00')">Almoço Nº3 Camarao acebolado com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº4 R$120,00')">Almoço Nº4 File de camarao empanado com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº5 R$120,00')">Almoço Nº5 Peixe inteira com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº6 R$120,00')">Almoço Nº6 Isca de peixe com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº7 R$120,00')">Almoço Nº7 File de carne ou carne de sol com fritas, arroz e feijao</button>
+        <button class="menu-btn" onclick="selecionarProduto('Almoço Nº8 R$120,00')">Almoço Nº8 Camaraozada, arroz e feijao</button>
+      </div>
+      
+      <!-- Sucos: sabores -->
+      <div id="submenuSucos" class="menu-group hidden">
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Acerola')">Acerola</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Abacaxi')">Abacaxi</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Manga')">Manga</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Caju')">Caju</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Umbu')">Umbu</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Caja')">Caja</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Goiaba')">Goiaba</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Graviola')">Graviola</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Maracuja')">Maracuja</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Morango')">Morango</button>
+        <button class="menu-btn" onclick="selecionarSaborSuco('Suco Limao')">Limao</button>
+        <!-- Ao escolher sabor, mostra se é copo/jarra -->
+        <div id="tipoSucoSection" class="hidden">
+          <div class="category-title">Escolha copo ou jarra</div>
+          <div id="tipoSucoBtns" class="menu-group">
+            <button class="menu-btn" onclick="selecionarTipoSuco('Copo', 15)">Copo R$15,00</button>
+            <button class="menu-btn" onclick="selecionarTipoSuco('Jarra', 25)">Jarra R$25,00</button>
+          </div>
+        </div>  
+      </div>
+
+      <div id="quantidadeSection" class="hidden">
+        <h3 id="produtoSelecionado"></h3>
+        <label>Quantidade:</label>
+        <input type="number" id="quantidadeInput" min="1" max="250" value="1">
+        <textarea id="observacoes" placeholder="Observações (ex: sem gelo, bem passado...)"></textarea>
+        <label>Preço unitário (R$):</label>
+        <input type="number" id="precoInput" min="0" step="0.01" placeholder="Deixe vazio para usar preço padrão">
+        <button class="action-btn" id="adicionarBtn">Adicionar à Mesa</button>
+      </div>
+
+      <div id="fechamentoSection" class="hidden">
+        <h3>Fechar Mesa?</h3>
+        <button class="action-btn" id="finalizarFechamentoBtn">Finalizar Fechamento</button>
+        <button id="mesaPagaBtn" class="hidden">Mesa paga</button>
+      </div>
+
+      <!-- Modal de Remoção -->
+      <div id="modalRemover" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+          <h3 id="modalTitulo"></h3>
+          <p id="modalDescricao"></p>
+          <input type="number" id="quantidadeRemoverInput" min="1" value="1" class="modal-input" />
+          <div class="modal-buttons">
+            <button id="confirmarRemocao" class="btn-confirmar">Remover</button>
+            <button id="cancelarRemocao" class="btn-cancelar">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="listaPedidos"></div>
+      <div id="totais"></div>
+      <button id="imprimirBtn" class="hidden">Imprimir Comanda (cozinha)</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Configurações ---
+    const PRINT_SERVER_BASE = '';
+    // --- Fim configurações ---
+
+    const grid = document.getElementById('grid');
+    const modal = document.getElementById('menuModal');
+    const precoInput = document.getElementById('precoInput');
+    const mesaTitulo = document.getElementById('mesaTitulo');
+    const closeModal = document.getElementById('closeModal');
+    const submenuBebidas = document.getElementById('submenuBebidas');
+    const submenuCaipirinha = document.getElementById('submenuCaipirinha');
+    const submenuPasteis = document.getElementById('submenuPasteis');
+    const submenuDrinksCom = document.getElementById('submenuDrinksCom');
+    const submenuPetiscosSemFritas = document.getElementById('submenuPetiscosSemFritas');
+    const submenuPetiscosComFritas = document.getElementById('submenuPetiscosComFritas');
+    const submenuAlmocop2 = document.getElementById('submenuAlmocoP2');
+    const submenuAlmocoP3 = document.getElementById('submenuAlmocoP3');
+    const submenuSucos = document.getElementById('submenuSucos');
+    const tipoSucoSection = document.getElementById('tipoSucoSection');
+    const quantidadeSection = document.getElementById('quantidadeSection');
+    const produtoSelecionado = document.getElementById('produtoSelecionado');
+    const adicionarBtn = document.getElementById('adicionarBtn');
+    const fecharMesaBtn = document.getElementById('fecharMesaBtn');
+    const fechamentoSection = document.getElementById('fechamentoSection');
+    const finalizarFechamentoBtn = document.getElementById('finalizarFechamentoBtn');
+    const mesaPagaBtn = document.getElementById('mesaPagaBtn');
+    const listaPedidos = document.getElementById('listaPedidos');
+    const observacoesInput = document.getElementById('observacoes');
+    const quantidadeInput = document.getElementById('quantidadeInput');
+    const totaisDiv = document.getElementById('totais');
+    const imprimirBtn = document.getElementById('imprimirBtn');
+
+    let mesaAtual = null;
+    let produtoAtualNome = '';
+    let produtoAtualPreco = 0;
+    let saborSucoSelecionado = '';
+    let pedidosPorMesa = {}; // { mesaNum: [ {produto, quantidade, preco, obs} ] }
+
+    // cria 100 mesas
+    for (let i = 1; i <= 100; i++) {
+      const mesa = document.createElement('div');
+      mesa.classList.add('mesa', 'livre');
+      mesa.textContent = i.toString().padStart(2, '0');
+      mesa.addEventListener('click', () => abrirMenuMesa(mesa, i));
+      grid.appendChild(mesa);
+    }
+
+    // abrir mesa
+    async function abrirMenuMesa(mesa, numero) {
+      mesaAtual = mesa;
+      mesaTitulo.textContent = `Mesa ${numero}`;
+      modal.style.display = 'flex';
+
+      // carrega pedidos do servidor e atualiza a visão
+      await carregarPedidos(numero);
+      atualizarListaPedidos(numero);
+
+      // reset views
+      [submenuBebidas, submenuCaipirinha, submenuPasteis, submenuPetiscosSemFritas, submenuPetiscosComFritas, submenuAlmocop2, submenuAlmocoP3, submenuDrinksCom, submenuSucos, tipoSucoSection, quantidadeSection, fechamentoSection]
+      .forEach(el => el.classList.add('hidden'));
+
+      // limpar campos relacionados ao produto atual
+      produtoAtualNome = '';
+      produtoAtualPreco = 0;
+      produtoSelecionado.textContent = '';
+      precoInput.value = '';
+    }
+
+    async function carregarPedidos(numero) {
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}`);
+        const data = await res.json();
+        pedidosPorMesa[numero] = data.pedidos || [];
+        atualizarListaPedidos(numero);
+      } catch (err) {
+        console.error('Erro ao carregar pedidos:', err);
+      }
+    }
+
+
+    // fechar modal
+    closeModal.addEventListener('click', () => modal.style.display = 'none');
+
+    // abrir categoria
+    function abrirCategoria(cat) {
+      [submenuBebidas, submenuCaipirinha, submenuPasteis, submenuPetiscosSemFritas, submenuPetiscosComFritas, submenuAlmocop2, submenuAlmocoP3, submenuDrinksCom, submenuSucos, tipoSucoSection, quantidadeSection, fechamentoSection]
+        .forEach(el => el.classList.add('hidden'));
+
+      if (cat === 'bebidas') submenuBebidas.classList.remove('hidden');
+      if (cat === 'caipirinha') submenuCaipirinha.classList.remove('hidden');
+      if (cat === 'pasteis') submenuPasteis.classList.remove('hidden');
+      if (cat === 'petiscossemfritas') submenuPetiscosSemFritas.classList.remove('hidden');
+      if (cat === 'petiscoscomfritas') submenuPetiscosComFritas.classList.remove('hidden');
+      if (cat === 'almocop2') submenuAlmocop2.classList.remove('hidden');
+      if (cat === 'almocop3') submenuAlmocoP3.classList.remove('hidden');
+      if (cat === 'drinks') submenuDrinksCom.classList.remove('hidden');
+      if (cat === 'sucos') submenuSucos.classList.remove('hidden');
+    }
+
+    // selecionar produto simples
+    function selecionarProduto(nomeProduto) {
+      // regex flexível para preços como "R$7", "R$7,00", "R$130,00", com ou sem espaço
+      const precoRegex = /R\$\s*([0-9]+(?:[.,][0-9]{1,2})?)/;
+      const match = nomeProduto.match(precoRegex);
+
+      let preco = 0;
+      let nomeSemPreco = nomeProduto;
+
+      if (match) {
+        preco = parseFloat(match[1].replace(',', '.'));
+        nomeSemPreco = nomeProduto.replace(precoRegex, '').trim();
+      }
+
+      produtoAtualNome = nomeSemPreco;
+      produtoAtualPreco = preco;
+
+      // mostra no modal qual produto foi selecionado
+      produtoSelecionado.textContent = produtoAtualNome + (preco > 0 ? ` — R$${preco.toFixed(2)}` : '');
+
+      // exibe quantidade e preenche input de preço com o valor padrão (se houver)
+      quantidadeInput.value = 1;
+      quantidadeSection.classList.remove('hidden');
+      tipoSucoSection.classList.add('hidden');
+
+      if (preco > 0) precoInput.value = preco.toFixed(2);
+      else precoInput.value = '';
+    }
+
+    // sucos: escolher sabor
+    function selecionarSaborSuco(sabor) {
+      saborSucoSelecionado = sabor;
+      tipoSucoSection.classList.remove('hidden');
+      quantidadeSection.classList.add('hidden');
+      // limpar possível preco anterior
+      precoInput.value = '';
+      produtoSelecionado.textContent = '';
+    }
+
+    // sucos: escolher copo/jarra
+    function selecionarTipoSuco(tipo, valor) {
+      // monta nome do produto com preço (formato aceito por selecionarProduto)
+      const nome = `Suco de ${saborSucoSelecionado} (${tipo}) R$${valor.toFixed(2).replace('.', ',')}`;
+      selecionarProduto(nome);
+    }
+
+    // limita input quantidade
+    quantidadeInput.addEventListener('input', () => {
+      let v = parseInt(quantidadeInput.value || '1', 10);
+      if (isNaN(v) || v < 1) v = 1;
+      if (v > 300) v = 300;
+      quantidadeInput.value = v;
+    });
+
+    // adicionar pedido
+    adicionarBtn.addEventListener('click', async () => {
+      const quantidade = parseInt(quantidadeInput.value, 10);
+      const obs = observacoesInput.value.trim();
+
+      if (isNaN(quantidade) || quantidade < 1 || quantidade > 300) {
+        alert('A quantidade deve ser entre 1 e 300.');
+        return;
+      }
+
+      // pega o campo de preço manual
+      const precoManual = parseFloat(precoInput.value);
+
+      // usa preço do produto (se houver) ou substitui pelo manual
+      let preco = produtoAtualPreco || 0;
+        if (!isNaN(precoManual) && precoManual > 0) {
+        preco = precoManual;
+      }
+
+      // aviso se preço for zero (opcional)
+      if (preco === 0) {
+        const ok = confirm('O preço final deste item será R$0,00. Deseja continuar?');
+        if (!ok) return;
+      }
+
+      const nomePedido = produtoAtualNome || produtoSelecionado.textContent || '(Sem nome)';
+      const mesaNum = mesaTitulo.textContent.replace('Mesa ', '');
+
+      if (!pedidosPorMesa[mesaNum]) pedidosPorMesa[mesaNum] = [];
+
+      // verifica se já existe o mesmo produto
+      const pedidoExistente = pedidosPorMesa[mesaNum].find(
+        p => p.produto === nomePedido && p.obs === obs
+      );
+
+      if (pedidoExistente) {
+        pedidoExistente.quantidade += quantidade;
+      } else {
+        pedidosPorMesa[mesaNum].push({ produto: nomePedido, quantidade, preco, obs });
+      }
+
+      atualizarListaPedidos(mesaNum);
+
+      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco)
+      try {
+        await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
+        });
+        console.log('Pedido enviado ao servidor com sucesso.');
+      } catch (err) {
+        console.error('Erro ao enviar pedido ao servidor:', err);
+        alert('Falha ao salvar o pedido no servidor.');
+      }
+
+      // 🔹 envia imediatamente ao servidor de impressão (cozinha)
+      try {
+        await sendPrintRequest(mesaNum, { produto: nomePedido, quantidade, preco, obs });
+      } catch (err) {
+        console.warn('Erro ao enviar impressão automática:', err);
+      }
+
+      // atualiza status da mesa
+      if (mesaAtual) {
+        mesaAtual.classList.remove('livre', 'fechamento');
+        mesaAtual.classList.add('ocupada');
+      }
+
+      // limpa campos
+      quantidadeInput.value = 1;
+      observacoesInput.value = '';
+      precoInput.value = '';
+      produtoAtualNome = '';
+      produtoAtualPreco = 0;
+      produtoSelecionado.textContent = '';
+      tipoSucoSection.classList.add('hidden');
+      quantidadeSection.classList.add('hidden');
+      fechamentoSection.classList.add('hidden');
+
+      modal.style.display = 'none';
+    });
+
+    // envia pedido individual ao servidor local de impressão
+    async function sendPrintRequest(mesaNum, pedido) {
+      try {
+        await fetch(`${PRINT_SERVER_BASE}/imprimir`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo: 'item',
+            mesa: mesaNum,
+            produto: pedido.produto,
+            quantidade: pedido.quantidade,
+            obs: pedido.obs,
+            subtotal: (pedido.preco * pedido.quantidade)
+          })
+        });
+        console.log('Impressão enviada (item) para a cozinha:', mesaNum, pedido.produto);
+      } catch (err) {
+        console.warn('Falha ao contatar servidor de impressão:', err);
+      }
+    }
+
+    // atualiza lista de pedidos e totais da mesa
+    function atualizarListaPedidos(numero) {
+      listaPedidos.innerHTML = '';
+      totaisDiv.innerHTML = '';
+      imprimirBtn.classList.add('hidden');
+
+      const pedidos = pedidosPorMesa[numero] || [];
+      if (pedidos.length === 0) {
+        listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
+        return;
+      }
+
+      let total = 0;
+      pedidos.forEach((item, index) => {
+        const subtotal = item.quantidade * item.preco;
+        total += subtotal;
+
+        const p = document.createElement('p');
+        p.innerHTML = `
+          ${item.quantidade}x ${item.produto} — R$${item.preco.toFixed(2)} 
+          ${item.obs ? `<br><small>Obs: ${item.obs}</small>` : ''}
+         <button 
+            onclick="removerProduto(${numero}, ${index})" 
+            style="margin-left:10px;background-color:#dc3545;color:white;border:none;border-radius:5px;padding:2px 8px;cursor:pointer;">
+            Excluir
+         </button>
+        `;
+       listaPedidos.appendChild(p);
+      });
+
+      const taxa = total * 0.10;
+      const totalFinal = total + taxa;
+
+      totaisDiv.innerHTML = `
+        Total: R$${total.toFixed(2)}<br>
+        10% Garçom: R$${taxa.toFixed(2)}<br>
+        <strong>Total Final: R$${totalFinal.toFixed(2)}</strong>
+      `;
+
+      imprimirBtn.classList.remove('hidden');
+      imprimirBtn.onclick = () => sendComandaPrintRequest(numero);
+    }
+
+    // Função para remover item do pedido
+    function removerProduto(mesaNum, index) {
+      const pedidos = pedidosPorMesa[mesaNum];
+      if (!pedidos || !pedidos[index]) return;
+
+      const produto = pedidos[index];
+      const quantidadeAtual = produto.quantidade;
+
+      // Exibe o modal
+      const modal = document.getElementById("modalRemover");
+      const titulo = document.getElementById("modalTitulo");
+      const descricao = document.getElementById("modalDescricao");
+      const inputQtd = document.getElementById("quantidadeRemoverInput");
+      const btnConfirmar = document.getElementById("confirmarRemocao");
+      const btnCancelar = document.getElementById("cancelarRemocao");
+
+      titulo.textContent = `Remover "${produto.produto}"`;
+      descricao.textContent = `Quantas unidades deseja remover? (Máx: ${quantidadeAtual})`;
+      inputQtd.max = quantidadeAtual;
+      inputQtd.value = 1;
+      modal.style.display = "flex";
+
+      // Remover listeners antigos (caso já tenha aberto antes)
+      btnConfirmar.replaceWith(btnConfirmar.cloneNode(true));
+      btnCancelar.replaceWith(btnCancelar.cloneNode(true));
+
+      const novoConfirmar = document.getElementById("confirmarRemocao");
+      const novoCancelar = document.getElementById("cancelarRemocao");
+
+      // Confirmar remoção
+      novoConfirmar.onclick = () => {
+        const qtdRemover = parseInt(inputQtd.value, 10);
+        if (isNaN(qtdRemover) || qtdRemover <= 0) {
+          alert("Quantidade inválida!");
+          return;
+        }
+
+        if (qtdRemover >= quantidadeAtual) {
+          pedidos.splice(index, 1);
+        } else {
+          produto.quantidade -= qtdRemover;
+        }
+
+        modal.style.display = "none";
+        atualizarListaPedidos(mesaNum);
+      };
+
+      // Cancelar
+      novoCancelar.onclick = () => {
+        modal.style.display = "none";
+      };
+    }
+
+
+ 
+    // envia comanda completa ao servidor
+    async function sendComandaPrintRequest(numero) {
+      const pedidos = pedidosPorMesa[numero] || [];
+      let total = 0;
+      pedidos.forEach(p => total += p.preco * p.quantidade);
+      const taxa = total * 0.10;
+      const totalFinal = total + taxa;
+
+      try {
+        await fetch(`${PRINT_SERVER_BASE}/imprimir_comanda`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo: 'comanda',
+            mesa: numero,
+            pedidos,
+            total,
+            taxa,
+            totalFinal
+          })
+        });
+        console.log('Comanda enviada ao servidor de impressão para mesa', numero);
+      } catch (err) {
+        console.warn('Erro ao enviar comanda:', err);
+      }
+    }
+
+    // fechar mesa (apenas muda para estado "fechamento" amarelo)
+    fecharMesaBtn.addEventListener('click', () => {
+      fechamentoSection.classList.remove('hidden');
+      mesaPagaBtn.classList.remove('hidden');
+      const mesaNum = mesaTitulo.textContent.replace('Mesa ', '');
+      atualizarListaPedidos(mesaNum);
+    });
+
+    // finalizar fechamento — apenas marca como "fechamento" (amarelo)
+    finalizarFechamentoBtn.addEventListener('click', () => {
+      if (!mesaAtual) return;
+      if (!confirm('Tem certeza que deseja fechar esta mesa? (marcar como fechamento)')) return;
+      mesaAtual.classList.remove('ocupada');
+      mesaAtual.classList.add('fechamento');
+      fecharMesaBtn.classList.add('fechada');
+      modal.style.display = 'none';
+    });
+
+    // Mesa paga: limpa pedidos e torna livre (verde)
+    mesaPagaBtn.addEventListener('click', () => {
+      if (!mesaAtual) return;
+      const mesaNum = mesaTitulo.textContent.replace('Mesa ', '');
+      if (!confirm('Confirmar que a mesa foi paga? Isso vai limpar os pedidos e liberar a mesa.')) return;
+
+      pedidosPorMesa[mesaNum] = [];
+      mesaAtual.classList.remove('ocupada', 'fechamento');
+      mesaAtual.classList.add('livre');
+      fecharMesaBtn.classList.remove('fechada');
+
+      listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
+      totaisDiv.innerHTML = '';
+      mesaPagaBtn.classList.add('hidden');
+      fechamentoSection.classList.add('hidden');
+      modal.style.display = 'none';
+    });
+
+    // Fecha modal clicando fora
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // (Opcional) função para remover item manualmente
+    function removerItem(mesaNum, index) {
+      if (!pedidosPorMesa[mesaNum]) return;
+      pedidosPorMesa[mesaNum].splice(index, 1);
+      atualizarListaPedidos(mesaNum);
+    }
+
+    // Exemplo de payloads enviados ao servidor:
+    // POST /imprimir  -> { tipo: 'item', mesa: '12', produto: 'Refrigerante Lata', quantidade: 2, obs: 'sem gelo', subtotal: 14.00 }
+    // POST /imprimir_comanda -> { tipo: 'comanda', mesa: '12', pedidos: [...], total: 100.00, taxa: 10.00, totalFinal: 110.00 }
+  </script>
+</body>
+</html>
