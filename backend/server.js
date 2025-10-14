@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Servir os arquivos estáticos (frontend)
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "..public")));
 
 // Inicializa banco
 initDB()
@@ -87,7 +87,7 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
 
 // Fallback — serve o index.html para qualquer rota não reconhecida
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "../public", "index.html"));
 });
 
 // ----------------------------------------------------------
