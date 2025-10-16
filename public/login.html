@@ -92,28 +92,39 @@
   </div>
 
   <script>
-    const form = document.getElementById('login-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const form = document.getElementById('loginForm');
 
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const res = await fetch('/login', {
+    const username = form.username.value;
+    const password = form.password.value;
+
+    try {
+      const response = await fetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        window.location.href = 'index.html';
-      } else {
-        alert(data.message || 'Erro ao fazer login');
+      if (!response.ok) {
+        alert(data.error || 'Erro no login.');
+        return;
       }
-    });
-  </script>
-</body>
+
+      // Salva token no localStorage
+      localStorage.setItem('token', data.token);
+
+      // Redireciona para a página principal
+      window.location.href = '/';
+    } catch (err) {
+      alert('Erro na requisição.');
+      console.error(err);
+    }
+  });
+</script>
 </html>

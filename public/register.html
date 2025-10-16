@@ -92,28 +92,38 @@
   </div>
 
   <script>
-    const form = document.getElementById('register-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const form = document.getElementById('registerForm');
 
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const res = await fetch('/register', {
+    const username = form.username.value;
+    const password = form.password.value;
+
+    try {
+      const response = await fetch('/api/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (res.ok) {
-        alert('Usuário cadastrado com sucesso!');
-        window.location.href = 'login.html';
-      } else {
-        alert(data.message || 'Erro ao cadastrar');
+      if (!response.ok) {
+        alert(data.error || 'Erro ao registrar.');
+        return;
       }
-    });
-  </script>
+
+      // Registro bem-sucedido: pode redirecionar direto ou ir ao login
+      alert('Registrado com sucesso! Faça login.');
+      window.location.href = '/login.html';
+    } catch (err) {
+      alert('Erro na requisição.');
+      console.error(err);
+    }
+  });
+</script>
 </body>
 </html>
