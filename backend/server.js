@@ -3,6 +3,9 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { authenticateToken } from "./auth.js";
 import { pool, initDB } from "./db.js";
 import dotenv from "dotenv";
 
@@ -25,6 +28,67 @@ initDB()
   .catch((err) => console.error("❌ Erro ao inicializar o banco:", err));
 
 // Rotas API -----------------------------------------------
+
+// Registrar usuário
+app.post("/api/register", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password)
+    return res.status(400).json({ message: "Usuário e senha são obrigatórios" });
+
+  try {
+    // Verifica se usuário existe
+    const userCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    if (userCheck.rows.length > 0)
+      return res.status(409).json({ message: "Usuário já existe" });
+
+    // Hashear senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Inserir usuário
+    await pool.query(
+      "INSERT INTO users (username, password) VALUES ($1, $2)",
+      [username, hashedPassword]
+    );
+
+    res.status(201).json({ message: "Usuário criado com sucesso" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao registrar usuário" });
+  }
+});
+
+// Login de usuário
+app.post("/api/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password)
+    return res.status(400).json({ message: "Usuário e senha são obrigatórios" });
+
+  try {
+    const userResult = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+    if (userResult.rows.length === 0)
+      return res.status(401).json({ message: "Usuário ou senha inválidos" });
+
+    const user = userResult.rows[0];
+
+    // Verifica senha
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ message: "Usuário ou senha inválidos" });
+
+    // Gera token JWT
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erro ao fazer login" });
+  }
+});
 
 // Obter todas as mesas
 app.get("/api/mesas", async (req, res) => {
@@ -85,16 +149,44 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
   }
 });
 
-// Fallback — serve o index.html para qualquer rota não reconhecida
-app.get("*", (req, res) => {
+// Middleware simples para checar token no cookie (ou header futuramente)
+function verificarAutenticacao(req, res, next) {
+  // (Versão simples usando cookies no futuro ou header, por enquanto "liberado")
+  // Aqui você pode melhorar depois para checar o JWT
+
+  // Exemplo básico de verificação futura:
+  // const authHeader = req.headers.authorization;
+  // if (!authHeader) return res.status(401).send("Não autorizado");
+
+  // next(); // se estiver tudo certo
+
+  // Agora, só serve o index.html
+  next();
+}
+
+// Serve index.html somente para usuários "autenticados"
+app.get("/", verificarAutenticacao, (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
 });
 
-// ----------------------------------------------------------
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em:`);
-  console.log(`   🌐 Local: http://localhost:${PORT}`);
-  console.log(`   🔗 Render: ${process.env.RENDER_EXTERNAL_URL || "aguardando URL do Render..."}`);
+// Para login e register.html serem acessíveis diretamente
+app.get("/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "login.html"));
 });
+
+app.get("/register.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "register.html"));
+});
+
+//├── backend/
+//│   ├── server.js ✅
+//│   ├── db.js ✅
+//│   ├── package.json ✅
+//│   └── .env ✅ (com DATABASE_URL)
+//│
+//├── public/
+//│   ├── index.html ✅ (verifica token e redireciona)
+//│   ├── login.html ✅
+//│   ├── register.html ✅
+//│   ├── style.css ✅
+//│   └── (outros arquivos estáticos)

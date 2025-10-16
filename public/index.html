@@ -201,6 +201,14 @@
   </div>
 
   <script>
+    // verifica se o usuario está autenticado
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      // Se não houver token, redireciona para login
+      window.location.href = '/login.html';
+      throw new Error('Acesso negado: Usuário não autenticado');
+    }
     // --- Configurações ---
     const PRINT_SERVER_BASE = 'https://paraisodasaguas.onrender.com/api';
     // --- Fim configurações ---
