@@ -7,38 +7,83 @@ body {
   background-color: #f8f9fa;
   min-height: 100vh;
   margin: 0;
+  padding: 10px;
+  animation: fadeInBody 0.8s ease;
 }
 
+/* Animação de entrada geral */
+@keyframes fadeInBody {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Título */
 h1 {
   margin-bottom: 20px;
   color: #333;
+  text-align: center;
+  animation: fadeIn 0.8s ease;
 }
 
+/* ===== GRID DAS MESAS ===== */
 .grid {
   display: grid;
-  grid-template-columns: repeat(10, 60px);
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  animation: fadeInGrid 1s ease;
+}
+
+@keyframes fadeInGrid {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .mesa {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  animation: mesaEntrada 0.5s ease forwards;
+  opacity: 0;
 }
 
-.mesa:hover { transform: scale(1.05); }
+/* Efeito de entrada de cada mesa com delay */
+.mesa:nth-child(1) { animation-delay: 0.1s; }
+.mesa:nth-child(2) { animation-delay: 0.15s; }
+.mesa:nth-child(3) { animation-delay: 0.2s; }
+.mesa:nth-child(4) { animation-delay: 0.25s; }
+.mesa:nth-child(5) { animation-delay: 0.3s; }
+.mesa:nth-child(6) { animation-delay: 0.35s; }
+.mesa:nth-child(7) { animation-delay: 0.4s; }
+.mesa:nth-child(8) { animation-delay: 0.45s; }
+.mesa:nth-child(9) { animation-delay: 0.5s; }
+.mesa:nth-child(10) { animation-delay: 0.55s; }
+
+@keyframes mesaEntrada {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.mesa:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
 .livre { background-color: #28a745; }
 .ocupada { background-color: #dc3545; }
 .fechamento { background-color: #ffc107; color: #333; }
 
+/* ===== MODAL ===== */
 .modal {
   display: none;
   position: fixed;
@@ -47,24 +92,29 @@ h1 {
   background-color: rgba(0,0,0,0.5);
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
   background-color: #ffffff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 20px;
   width: 90%;
   max-width: 600px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
   max-height: 90vh;
   overflow-y: auto;
+  animation: fadeIn 0.4s ease;
 }
 
+/* ===== BOTÕES ===== */
 .menu-group {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 15px;
+  justify-content: center;
+  animation: fadeIn 0.8s ease;
 }
 
 .menu-btn {
@@ -74,10 +124,41 @@ h1 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
+  opacity: 0;
 }
 
-.menu-btn:hover { background-color: #0056b3; }
+.menu-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.07);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Subvariáveis (quando aparecem) */
+.sub-btn {
+  background-color: #0056b3;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
+  opacity: 0;
+}
+
+.sub-btn:hover {
+  background-color: #003f8a;
+  transform: scale(1.07);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* Efeitos de entrada */
+@keyframes pulseIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 .hidden { display: none; }
 
@@ -89,6 +170,12 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
   float: right;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: #b02a37;
+  transform: scale(1.05);
 }
 
 .action-btn {
@@ -99,15 +186,26 @@ h1 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
 }
 
-.action-btn:hover { background-color: #218838; }
+.action-btn:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
 
 #fecharMesaBtn {
   background-color: #dc3545;
   width: 100%;
   margin-top: 15px;
   order: 99;
+  transition: all 0.3s ease;
+}
+
+#fecharMesaBtn:hover {
+  background-color: #b02a37;
+  transform: scale(1.05);
 }
 
 #fecharMesaBtn.fechada {
@@ -148,24 +246,30 @@ h1 {
   color: white;
   width: 100%;
   margin-top: 10px;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
 }
 
-#imprimirBtn:hover { background-color: #0056b3; }
+#imprimirBtn:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
 
-/* tipo suco section */
+/* Tipo suco section */
 #tipoSucoSection {
   margin-top: 10px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-/* layout small tweaks */
+/* Título de categoria */
 .category-title {
   margin-top: 12px;
   font-weight: bold;
 }
-    
+
 /* Fundo do modal */
 .modal-overlay {
   position: fixed;
@@ -181,16 +285,6 @@ h1 {
 }
 
 /* Caixa do modal */
-.modal-content {
-  background: #fff;
-  border-radius: 12px;
-  padding: 25px 30px;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease;
-}
-
 .modal-content h3 {
   margin-bottom: 10px;
   color: #333;
@@ -210,10 +304,12 @@ h1 {
   border: 1px solid #ccc;
 }
 
-/* Botões */
+/* Botões do modal */
 .modal-buttons {
   display: flex;
   justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .btn-confirmar {
@@ -223,11 +319,12 @@ h1 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.3s ease;
 }
 
 .btn-confirmar:hover {
   background-color: #c1121f;
+  transform: scale(1.05);
 }
 
 .btn-cancelar {
@@ -237,18 +334,21 @@ h1 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.3s ease;
 }
 
 .btn-cancelar:hover {
   background-color: #999;
+  transform: scale(1.05);
 }
 
+/* Animações */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Botão mesa paga */
 #mesaPagaBtn {
   background-color: #007bff;
   color: white;
@@ -258,4 +358,51 @@ h1 {
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
+}
+
+#mesaPagaBtn:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* ====== RESPONSIVIDADE ====== */
+@media (max-width: 768px) {
+  h1 { font-size: 1.6rem; }
+
+  .mesa { font-size: 14px; }
+
+  .menu-btn,
+  .action-btn,
+  #fecharMesaBtn,
+  #imprimirBtn {
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .modal-content {
+    max-width: 90%;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 8px;
+  }
+
+  .mesa { font-size: 13px; }
+
+  .menu-btn,
+  .action-btn,
+  .sub-btn {
+    width: 100%;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
