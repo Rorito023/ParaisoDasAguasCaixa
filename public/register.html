@@ -4,28 +4,39 @@
   <meta charset="UTF-8" />
   <title>Cadastro</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #e34141, #f72a2a);
+      background: linear-gradient(135deg, #f6a47f, #f58c6a); /* tons quentes agradáveis */
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
       color: #333;
+      transition: all 0.3s ease;
     }
+
     .container {
       background: white;
       padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      width: 320px;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      width: 90%;
+      max-width: 400px;
       text-align: center;
+      transition: all 0.3s ease;
     }
+
     h2 {
       margin-bottom: 25px;
-      color: #fd2f2f;
+      color: #f36c4f; /* tom laranja/rosado */
+      font-size: 28px;
     }
+
     label {
       display: block;
       text-align: left;
@@ -33,48 +44,85 @@
       font-weight: 600;
       color: #444;
     }
+
     input[type="text"],
     input[type="password"] {
       width: 100%;
-      padding: 10px 12px;
+      padding: 12px 14px;
       margin-bottom: 18px;
-      border: 1.8px solid #ccc;
-      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
       font-size: 16px;
-      transition: border-color 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
+
     input[type="text"]:focus,
     input[type="password"]:focus {
-      border-color: #fd2f2f;
+      border-color: #f36c4f;
       outline: none;
+      box-shadow: 0 0 8px rgba(243, 108, 79, 0.3);
     }
+
     button {
       width: 100%;
-      padding: 12px;
-      background: #fd2f2f;
+      padding: 14px;
+      background: #f36c4f;
       border: none;
       color: white;
       font-weight: 700;
       font-size: 17px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
+
     button:hover {
-      background: #e41a1a;
+      background: #e04f32;
+      transform: translateY(-2px);
     }
+
     p {
-      margin-top: 18px;
+      margin-top: 20px;
       font-size: 14px;
       color: #666;
     }
+
     a {
-      color: #fd2f2f;
+      color: #f36c4f;
       text-decoration: none;
       font-weight: 600;
+      transition: color 0.3s ease;
     }
+
     a:hover {
       text-decoration: underline;
+      color: #e04f32;
+    }
+
+    /* Responsividade para dispositivos móveis */
+    @media (max-width: 480px) {
+      body {
+        padding: 20px;
+      }
+
+      .container {
+        padding: 25px 20px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        padding: 10px 12px;
+        font-size: 15px;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -92,36 +140,35 @@
   </div>
 
   <script>
-  const form = document.getElementById('register-form');
+    const form = document.getElementById('register-form');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    const username = form.username.value.trim();
-    const password = form.password.value;
+      const username = form.username.value.trim();
+      const password = form.password.value;
 
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        // usa o campo "message" que o server retorna
-        alert(data.message || 'Erro ao registrar.');
-        return;
+        if (!response.ok) {
+          alert(data.message || 'Erro ao registrar.');
+          return;
+        }
+
+        alert(data.message || 'Registrado com sucesso! Faça login.');
+        window.location.href = '/login.html';
+      } catch (err) {
+        alert('Erro na requisição.');
+        console.error(err);
       }
-
-      alert(data.message || 'Registrado com sucesso! Faça login.');
-      window.location.href = '/login.html';
-    } catch (err) {
-      alert('Erro na requisição.');
-      console.error(err);
-    }
-  });
-</script>
+    });
+  </script>
 </body>
 </html>
