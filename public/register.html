@@ -92,32 +92,30 @@
   </div>
 
   <script>
-  const form = document.getElementById('registerForm');
+  const form = document.getElementById('register-form');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = form.username.value;
+    const username = form.username.value.trim();
     const password = form.password.value;
 
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || 'Erro ao registrar.');
+        // usa o campo "message" que o server retorna
+        alert(data.message || 'Erro ao registrar.');
         return;
       }
 
-      // Registro bem-sucedido: pode redirecionar direto ou ir ao login
-      alert('Registrado com sucesso! Faça login.');
+      alert(data.message || 'Registrado com sucesso! Faça login.');
       window.location.href = '/login.html';
     } catch (err) {
       alert('Erro na requisição.');
