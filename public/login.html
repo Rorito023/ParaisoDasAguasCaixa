@@ -92,7 +92,7 @@
   </div>
 
   <script>
-  const form = document.getElementById('loginForm');
+  const form = document.getElementById('login-Form');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -112,7 +112,7 @@
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || 'Erro no login.');
+        alert(data.message || 'Erro no login.');
         return;
       }
 
