@@ -298,20 +298,19 @@
       mesaTitulo.textContent = `Mesa ${numero}`;
       modal.style.display = 'flex';
 
-      // carrega pedidos do servidor e atualiza a visão
+      // carrega pedidos do servidor (e atualiza a lista)
       await carregarPedidos(numero);
-      atualizarListaPedidos(numero);
 
       // reset views
       [submenuBebidas, submenuCaipirinha, submenuPasteis, submenuPetiscosSemFritas, submenuPetiscosComFritas, submenuAlmocop2, submenuAlmocoP3, submenuDrinksCom, submenuSucos, tipoSucoSection, quantidadeSection, fechamentoSection]
       .forEach(el => el.classList.add('hidden'));
 
-      // limpar campos relacionados ao produto atual
       produtoAtualNome = '';
       produtoAtualPreco = 0;
       produtoSelecionado.textContent = '';
       precoInput.value = '';
     }
+
 
     async function carregarPedidos(numero) {
       try {
