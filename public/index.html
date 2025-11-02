@@ -247,14 +247,50 @@
     let saborSucoSelecionado = '';
     let pedidosPorMesa = {}; // { mesaNum: [ {produto, quantidade, preco, obs} ] }
 
-    // cria 100 mesas
-    for (let i = 1; i <= 100; i++) {
-      const mesa = document.createElement('div');
-      mesa.classList.add('mesa', 'livre');
-      mesa.textContent = i.toString().padStart(2, '0');
-      mesa.addEventListener('click', () => abrirMenuMesa(mesa, i));
-      grid.appendChild(mesa);
+    // --- Criação de mesas de acordo com o status real do banco ---
+    async function criarMesas() {
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas`);
+        const mesas = await res.json(); // [{ numero: 1, status: 'ocupada' }, ...]
+
+        grid.innerHTML = ''; // limpa grid antes de criar
+
+        mesas.forEach(m => {
+          const mesa = document.createElement('div');
+          mesa.classList.add('mesa', m.status); // adiciona status real
+          mesa.textContent = m.numero.toString().padStart(2, '0');
+          mesa.addEventListener('click', () => abrirMenuMesa(mesa, m.numero));
+          grid.appendChild(mesa);
+        });
+
+      } catch (err) {
+        console.error('Erro ao criar mesas do banco:', err);
+      }
     }
+
+    // Atualiza status das mesas periodicamente (opcional)
+    async function atualizarStatusMesas() {
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas`);
+        const mesas = await res.json();
+
+        mesas.forEach(m => {
+          const mesaDiv = document.querySelector(`.mesa:nth-child(${m.numero})`);
+          if (mesaDiv) {
+            mesaDiv.classList.remove('livre', 'ocupada', 'fechamento');
+            mesaDiv.classList.add(m.status);
+          }
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar status das mesas:', err);
+      }
+    }
+
+    // Inicializa a criação das mesas ao carregar a página
+    window.addEventListener('load', async () => {
+      await criarMesas();
+      await atualizarStatusMesas();
+    });
 
     // abrir mesa
     async function abrirMenuMesa(mesa, numero) {
@@ -279,9 +315,11 @@
 
     async function carregarPedidos(numero) {
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}`);
+        const res = await fetch(`${PRINT_SERVER_BASE}/pedidos/${numero}`);
         const data = await res.json();
-        pedidosPorMesa[numero] = data.pedidos || [];
+
+        pedidosPorMesa[numero] = data || [];
+
         atualizarListaPedidos(numero);
       } catch (err) {
         console.error('Erro ao carregar pedidos:', err);
@@ -405,18 +443,23 @@
 
       atualizarListaPedidos(mesaNum);
 
-      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco)
+      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco e obter o ID)
       try {
-        await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
         });
+
+        const novoPedido = await res.json(); // backend retorna o pedido criado (com id)
+        pedidosPorMesa[mesaNum].push(novoPedido);
+
         console.log('Pedido enviado ao servidor com sucesso.');
       } catch (err) {
         console.error('Erro ao enviar pedido ao servidor:', err);
         alert('Falha ao salvar o pedido no servidor.');
       }
+
 
       // 🔹 envia imediatamente ao servidor de impressão (cozinha)
       try {
@@ -539,20 +582,36 @@
       const novoCancelar = document.getElementById("cancelarRemocao");
 
       // Confirmar remoção
-      novoConfirmar.onclick = () => {
+      novoConfirmar.onclick = async () => {
         const qtdRemover = parseInt(inputQtd.value, 10);
-        if (isNaN(qtdRemover) || qtdRemover <= 0) {
-          alert("Quantidade inválida!");
-          return;
-        }
 
         if (qtdRemover >= quantidadeAtual) {
-          pedidos.splice(index, 1);
+          // chama DELETE no backend
+          try {
+            await fetch(`${PRINT_SERVER_BASE}/pedidos/${produto.id}`, { method: 'DELETE' });
+            pedidos.splice(index, 1);
+          } catch (err) {
+            console.error('Erro ao remover pedido no servidor:', err);
+            alert('Falha ao remover pedido no servidor.');
+            return;
+          }
         } else {
-          produto.quantidade -= qtdRemover;
+          // Atualiza quantidade no backend via PUT (ou mesmo POST PATCH)
+          try {
+            await fetch(`${PRINT_SERVER_BASE}/pedidos/${produto.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ quantidade: produto.quantidade - qtdRemover })
+            });
+            produto.quantidade -= qtdRemover;
+          } catch (err) {
+            console.error('Erro ao atualizar quantidade do pedido no servidor:', err);
+            alert('Falha ao atualizar quantidade do pedido no servidor.');
+            return;
+          }
         }
 
-        modal.style.display = "none";
+        modal.style.display = 'none';
         atualizarListaPedidos(mesaNum);
       };
 
@@ -610,22 +669,40 @@
     });
 
     // Mesa paga: limpa pedidos e torna livre (verde)
-    mesaPagaBtn.addEventListener('click', () => {
+    mesaPagaBtn.addEventListener('click', async () => {
       if (!mesaAtual) return;
+
       const mesaNum = mesaTitulo.textContent.replace('Mesa ', '');
+
       if (!confirm('Confirmar que a mesa foi paga? Isso vai limpar os pedidos e liberar a mesa.')) return;
 
-      pedidosPorMesa[mesaNum] = [];
-      mesaAtual.classList.remove('ocupada', 'fechamento');
-      mesaAtual.classList.add('livre');
-      fecharMesaBtn.classList.remove('fechada');
+      try {
+        // envia ao servidor para liberar a mesa
+        await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/liberar`, {
+          method: 'POST'
+        });
 
-      listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
-      totaisDiv.innerHTML = '';
-      mesaPagaBtn.classList.add('hidden');
-      fechamentoSection.classList.add('hidden');
-      modal.style.display = 'none';
+        // limpa pedidos no frontend
+        pedidosPorMesa[mesaNum] = [];
+
+        // atualiza status visual da mesa
+        mesaAtual.classList.remove('ocupada', 'fechamento');
+        mesaAtual.classList.add('livre');
+
+        // limpa interface
+        listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
+        totaisDiv.innerHTML = '';
+        mesaPagaBtn.classList.add('hidden');
+        fechamentoSection.classList.add('hidden');
+        fecharMesaBtn.classList.remove('fechada');
+
+        modal.style.display = 'none';
+      } catch (err) {
+        console.error('Erro ao liberar mesa:', err);
+        alert('Falha ao liberar mesa no servidor.');
+      }
     });
+
 
     // Fecha modal clicando fora
     window.addEventListener('click', (e) => {

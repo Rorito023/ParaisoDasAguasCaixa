@@ -37,15 +37,12 @@ app.post("/api/register", async (req, res) => {
     return res.status(400).json({ message: "Usuário e senha são obrigatórios" });
 
   try {
-    // Verifica se usuário existe
     const userCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
     if (userCheck.rows.length > 0)
       return res.status(409).json({ message: "Usuário já existe" });
 
-    // Hashear senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Inserir usuário
     await pool.query(
       "INSERT INTO users (username, password) VALUES ($1, $2)",
       [username, hashedPassword]
@@ -71,12 +68,9 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ message: "Usuário ou senha inválidos" });
 
     const user = userResult.rows[0];
-
-    // Verifica senha
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: "Usuário ou senha inválidos" });
 
-    // Gera token JWT
     const token = jwt.sign(
       { userId: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
@@ -111,7 +105,7 @@ app.get("/api/pedidos/:mesa", async (req, res) => {
   }
 });
 
-// Criar pedido
+// Criar pedido genérico
 app.post("/api/pedidos", async (req, res) => {
   const { mesa, produto, quantidade, preco, obs } = req.body;
   try {
@@ -126,6 +120,34 @@ app.post("/api/pedidos", async (req, res) => {
   }
 });
 
+// 🔹 ROTA AJUSTADA: adiciona pedido e retorna o registro criado
+app.post("/api/mesas/:mesa/pedidos", async (req, res) => {
+  const mesa = req.params.mesa;
+  const { produto, quantidade, preco, obs } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO pedidos (mesa, produto, quantidade, preco, obs)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`, // retorna o pedido criado
+      [mesa, produto, quantidade, preco, obs]
+    );
+
+    // Atualiza o status da mesa para 'ocupada'
+    await pool.query(
+      "UPDATE mesas SET status = 'ocupada' WHERE numero = $1",
+      [mesa]
+    );
+
+    // Retorna o pedido criado ao frontend
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Erro ao adicionar pedido à mesa:", err);
+    res.status(500).json({ error: "Erro ao adicionar pedido à mesa" });
+  }
+});
+
+
 // Remover pedido
 app.delete("/api/pedidos/:id", async (req, res) => {
   const id = req.params.id;
@@ -134,6 +156,27 @@ app.delete("/api/pedidos/:id", async (req, res) => {
     res.json({ message: "Pedido removido" });
   } catch (err) {
     res.status(500).json({ error: "Erro ao remover pedido" });
+  }
+});
+
+// Atualizar quantidade de um pedido
+app.put("/api/pedidos/:id", async (req, res) => {
+  const id = req.params.id;
+  const { quantidade } = req.body;
+
+  try {
+    const result = await pool.query(
+      "UPDATE pedidos SET quantidade = $1 WHERE id = $2 RETURNING *",
+      [quantidade, id]
+    );
+
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: "Pedido não encontrado" });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Erro ao atualizar pedido:", err);
+    res.status(500).json({ error: "Erro ao atualizar pedido" });
   }
 });
 
@@ -149,27 +192,17 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
   }
 });
 
-// Middleware simples para checar token no cookie (ou header futuramente)
+// Middleware simples para checar token (placeholder)
 function verificarAutenticacao(req, res, next) {
-  // (Versão simples usando cookies no futuro ou header, por enquanto "liberado")
-  // Aqui você pode melhorar depois para checar o JWT
-
-  // Exemplo básico de verificação futura:
-  // const authHeader = req.headers.authorization;
-  // if (!authHeader) return res.status(401).send("Não autorizado");
-
-  // next(); // se estiver tudo certo
-
-  // Agora, só serve o index.html
   next();
 }
 
-// Serve index.html somente para usuários "autenticados"
+// Serve index.html
 app.get("/", verificarAutenticacao, (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
 });
 
-// Para login e register.html serem acessíveis diretamente
+// Para login e register.html
 app.get("/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "login.html"));
 });
@@ -178,12 +211,12 @@ app.get("/register.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "register.html"));
 });
 
-// Porta fornecida pelo Render ou 3000 para rodar localmente
+// Porta
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
+
 
 //├── backend/
 //│   ├── server.js ✅
