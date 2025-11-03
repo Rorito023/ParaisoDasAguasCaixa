@@ -94,13 +94,21 @@ app.get("/api/mesas", async (req, res) => {
   }
 });
 
-// Obter pedidos de uma mesa
-app.get("/api/pedidos/:mesa", async (req, res) => {
+// 🔹 Obter todos os pedidos de uma mesa (com ID incluso)
+app.get("/api/mesas/:mesa/pedidos", async (req, res) => {
   const mesa = req.params.mesa;
   try {
-    const result = await pool.query("SELECT * FROM pedidos WHERE mesa = $1", [mesa]);
+    const result = await pool.query(
+      `SELECT id, produto, quantidade, preco, obs
+       FROM pedidos
+       WHERE mesa = $1
+       ORDER BY id ASC`,
+      [mesa]
+    );
+
     res.json(result.rows);
   } catch (err) {
+    console.error("❌ Erro ao buscar pedidos da mesa:", err);
     res.status(500).json({ error: "Erro ao buscar pedidos" });
   }
 });

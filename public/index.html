@@ -314,16 +314,19 @@
 
     async function carregarPedidos(numero) {
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/pedidos/${numero}`);
+        // 🔹 Chama a rota correta do backend
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}/pedidos`);
         const data = await res.json();
 
         pedidosPorMesa[numero] = data || [];
 
         atualizarListaPedidos(numero);
       } catch (err) {
-        console.error('Erro ao carregar pedidos:', err);
+        console.error('Erro ao carregar pedidos da mesa:', err);
+        alert('Não foi possível carregar os pedidos desta mesa.');
       }
     }
+
 
 
     // fechar modal
@@ -429,34 +432,33 @@
 
       if (!pedidosPorMesa[mesaNum]) pedidosPorMesa[mesaNum] = [];
 
-      // verifica se já existe o mesmo produto
+      // verifica se já existe o mesmo produto na mesa
       const pedidoExistente = pedidosPorMesa[mesaNum].find(
         p => p.produto === nomePedido && p.obs === obs
       );
 
       if (pedidoExistente) {
+        // se já existe, apenas atualiza a quantidade localmente
         pedidoExistente.quantidade += quantidade;
+        atualizarListaPedidos(mesaNum);
       } else {
-        pedidosPorMesa[mesaNum].push({ produto: nomePedido, quantidade, preco, obs });
-      }
+        // se não existe, envia ao servidor e adiciona ao array após confirmação
+        try {
+          const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
+          });
 
-      atualizarListaPedidos(mesaNum);
+          const novoPedido = await res.json(); // backend retorna o pedido com id
+          pedidosPorMesa[mesaNum] = pedidosPorMesa[mesaNum] || [];
+          pedidosPorMesa[mesaNum].push(novoPedido); // adiciona somente aqui
 
-      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco e obter o ID)
-      try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
-        });
-
-        const novoPedido = await res.json(); // backend retorna o pedido criado (com id)
-        pedidosPorMesa[mesaNum].push(novoPedido);
-
-        console.log('Pedido enviado ao servidor com sucesso.');
-      } catch (err) {
-        console.error('Erro ao enviar pedido ao servidor:', err);
-        alert('Falha ao salvar o pedido no servidor.');
+          atualizarListaPedidos(mesaNum); // atualiza modal
+        } catch (err) {
+          console.error('Erro ao enviar pedido ao servidor:', err);
+          alert('Falha ao salvar o pedido no servidor.');
+        }
       }
 
 
@@ -529,13 +531,14 @@
         p.innerHTML = `
           ${item.quantidade}x ${item.produto} — R$${item.preco.toFixed(2)} 
           ${item.obs ? `<br><small>Obs: ${item.obs}</small>` : ''}
-         <button 
-            onclick="removerProduto(${numero}, ${index})" 
+          <button 
+            data-index="${index}"
+            class="btn-excluir"
             style="margin-left:10px;background-color:#dc3545;color:white;border:none;border-radius:5px;padding:2px 8px;cursor:pointer;">
             Excluir
-         </button>
+          </button>
         `;
-       listaPedidos.appendChild(p);
+        listaPedidos.appendChild(p);
       });
 
       const taxa = total * 0.10;
@@ -549,7 +552,16 @@
 
       imprimirBtn.classList.remove('hidden');
       imprimirBtn.onclick = () => sendComandaPrintRequest(numero);
+
+      // 🔹 Abre modal de remoção ao clicar no botão
+      document.querySelectorAll('.btn-excluir').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const index = btn.getAttribute('data-index');
+          removerProduto(numero, index); // reutiliza a função que já mostra o modal
+        });
+      });
     }
+
 
     // Função para remover item do pedido
     function removerProduto(mesaNum, index) {
