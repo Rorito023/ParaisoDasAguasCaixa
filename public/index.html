@@ -279,12 +279,13 @@
 
     async function carregarPedidos(numero) {
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}`);
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}/pedidos`);
+        if (!res.ok) throw new Error("Erro ao buscar pedidos da mesa");
         const data = await res.json();
-        pedidosPorMesa[numero] = data.pedidos || [];
+        pedidosPorMesa[numero] = data || [];
         atualizarListaPedidos(numero);
       } catch (err) {
-        console.error('Erro ao carregar pedidos:', err);
+        console.error('❌ Erro ao carregar pedidos:', err);
       }
     }
 
