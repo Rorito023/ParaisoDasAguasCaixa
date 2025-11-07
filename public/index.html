@@ -416,17 +416,28 @@
 
       atualizarListaPedidos(mesaNum);
 
-      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco)
+      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco) E USA O RETORNO
       try {
-        await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
         });
-        console.log('Pedido enviado ao servidor com sucesso.');
+
+        if (!res.ok) throw new Error('Falha ao salvar pedido no servidor');
+
+        // servidor retorna o pedido criado (com id)
+        const novoPedido = await res.json();
+
+        // adiciona o pedido retornado (com id) no array local
+        pedidosPorMesa[mesaNum] = pedidosPorMesa[mesaNum] || [];
+        pedidosPorMesa[mesaNum].push(novoPedido);
+
+        console.log('✅ Pedido salvo no servidor e adicionado localmente:', novoPedido);
       } catch (err) {
-        console.error('Erro ao enviar pedido ao servidor:', err);
+        console.error('❌ Erro ao enviar pedido ao servidor:', err);
         alert('Falha ao salvar o pedido no servidor.');
+        return; // evita continuar se falhar o salvamento
       }
 
       // 🔹 envia imediatamente ao servidor de impressão (cozinha)
@@ -550,21 +561,46 @@
       const novoCancelar = document.getElementById("cancelarRemocao");
 
       // Confirmar remoção
-      novoConfirmar.onclick = () => {
+      novoConfirmar.onclick = async () => {
         const qtdRemover = parseInt(inputQtd.value, 10);
         if (isNaN(qtdRemover) || qtdRemover <= 0) {
           alert("Quantidade inválida!");
           return;
         }
 
-        if (qtdRemover >= quantidadeAtual) {
-          pedidos.splice(index, 1);
-        } else {
-          produto.quantidade -= qtdRemover;
-        }
+        try {
+          // 🔹 Se a quantidade removida for igual ou maior à atual → deletar o pedido
+          if (qtdRemover >= produto.quantidade) {
+            const res = await fetch(`${PRINT_SERVER_BASE}/api/pedidos/${produto.id}`, {
+              method: 'DELETE'
+            });
+            if (!res.ok) throw new Error('Falha ao remover pedido no servidor');
+          
+            pedidosPorMesa[mesaNum].splice(index, 1); // remove localmente
+          } 
+          // 🔹 Caso contrário → apenas diminuir quantidade
+          else {
+            const novaQtd = produto.quantidade - qtdRemover;
+            const res = await fetch(`${PRINT_SERVER_BASE}/api/pedidos/${produto.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ quantidade: novaQtd })
+            });
+            if (!res.ok) throw new Error('Falha ao atualizar quantidade no servidor');
 
-        modal.style.display = "none";
-        atualizarListaPedidos(mesaNum);
+            produto.quantidade = novaQtd; // atualiza localmente
+          }
+
+          // Atualiza interface
+          modal.style.display = "none";
+          atualizarListaPedidos(mesaNum);
+          atualizarCoresDasMesas();
+
+          console.log('✅ Pedido atualizado/removido com sucesso.');
+        } catch (err) {
+          console.error('❌ Erro ao remover/atualizar pedido no servidor:', err);
+          alert('Erro ao remover/atualizar pedido no servidor.');
+        }
       };
 
       // Cancelar
