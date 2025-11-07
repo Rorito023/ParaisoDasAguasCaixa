@@ -569,37 +569,50 @@
         }
 
         try {
-          // 🔹 Se a quantidade removida for igual ou maior à atual → deletar o pedido
-          if (qtdRemover >= produto.quantidade) {
-            const res = await fetch(`${PRINT_SERVER_BASE}/api/pedidos/${produto.id}`, {
+          // garante que existe id (pré-requisito que seu POST retorne o pedido com id)
+          if (!produto.id) {
+            throw new Error('Pedido sem id — crie o pedido novamente para permitir exclusão.');
+          }
+
+          // Se remover todas as unidades -> deletar no banco (por id)
+          if (qtdRemover >= quantidadeAtual) {
+            const res = await fetch(`${PRINT_SERVER_BASE}/pedidos/${produto.id}`, {
               method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Falha ao remover pedido no servidor');
-          
-            pedidosPorMesa[mesaNum].splice(index, 1); // remove localmente
-          } 
-          // 🔹 Caso contrário → apenas diminuir quantidade
-          else {
+
+            if (!res.ok) {
+              const text = await res.text().catch(()=>null);
+              throw new Error(`Falha ao remover pedido no servidor (status ${res.status}) ${text||''}`);
+            }
+
+            // remove localmente
+            pedidosPorMesa[mesaNum].splice(index, 1);
+          } else {
+            // reduzir quantidade -> PUT para /pedidos/:id
             const novaQtd = produto.quantidade - qtdRemover;
-            const res = await fetch(`${PRINT_SERVER_BASE}/api/pedidos/${produto.id}`, {
+            const res = await fetch(`${PRINT_SERVER_BASE}/pedidos/${produto.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ quantidade: novaQtd })
             });
-            if (!res.ok) throw new Error('Falha ao atualizar quantidade no servidor');
 
-            produto.quantidade = novaQtd; // atualiza localmente
+            if (!res.ok) {
+              const text = await res.text().catch(()=>null);
+              throw new Error(`Falha ao atualizar quantidade no servidor (status ${res.status}) ${text||''}`);
+            }
+
+            // atualiza localmente
+            produto.quantidade = novaQtd;
           }
 
-          // Atualiza interface
           modal.style.display = "none";
           atualizarListaPedidos(mesaNum);
-          atualizarCoresDasMesas();
+          if (typeof atualizarCoresDasMesas === 'function') atualizarCoresDasMesas();
 
           console.log('✅ Pedido atualizado/removido com sucesso.');
         } catch (err) {
-          console.error('❌ Erro ao remover/atualizar pedido no servidor:', err);
-          alert('Erro ao remover/atualizar pedido no servidor.');
+          console.error('Erro ao remover/atualizar pedido no servidor:', err);
+          alert('Erro ao remover/atualizar pedido no servidor.\n' + (err.message || err));
         }
       };
 
