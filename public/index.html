@@ -281,14 +281,20 @@
       try {
         const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${numero}/pedidos`);
         if (!res.ok) throw new Error("Erro ao buscar pedidos da mesa");
-        const data = await res.json();
-        pedidosPorMesa[numero] = data || [];
+        let data = await res.json();
+
+        // 🔧 Converter preço para número
+        data = data.map(item => ({
+          ...item,
+          preco: parseFloat(item.preco) || 0
+        }));
+
+        pedidosPorMesa[numero] = data;
         atualizarListaPedidos(numero);
       } catch (err) {
         console.error('❌ Erro ao carregar pedidos:', err);
       }
     }
-
 
     // fechar modal
     closeModal.addEventListener('click', () => modal.style.display = 'none');
