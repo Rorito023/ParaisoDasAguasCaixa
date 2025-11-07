@@ -673,26 +673,49 @@
       modal.style.display = 'none';
     });
 
-    // Mesa paga: limpa pedidos e torna livre (verde)
-    mesaPagaBtn.addEventListener('click', () => {
+    // ✅ Mesa paga: limpa pedidos no banco e torna mesa livre (verde)
+    mesaPagaBtn.addEventListener('click', async () => {
       if (!mesaAtual) return;
+
       const mesaNum = parseInt(mesaTitulo.textContent.replace('Mesa ', ''), 10);
       if (isNaN(mesaNum)) {
         alert('Número da mesa inválido!');
         return;
       }
-      if (!confirm('Confirmar que a mesa foi paga? Isso vai limpar os pedidos e liberar a mesa.')) return;
 
-      pedidosPorMesa[mesaNum] = [];
-      mesaAtual.classList.remove('ocupada', 'fechamento');
-      mesaAtual.classList.add('livre');
-      fecharMesaBtn.classList.remove('fechada');
+      const confirmar = confirm(
+        'Confirmar que a mesa foi paga? Isso vai limpar todos os pedidos e liberar a mesa.'
+      );
+      if (!confirmar) return;
 
-      listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
-      totaisDiv.innerHTML = '';
-      mesaPagaBtn.classList.add('hidden');
-      fechamentoSection.classList.add('hidden');
-      modal.style.display = 'none';
+      try {
+        // 🔹 Requisição ao servidor para limpar os pedidos e liberar a mesa
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/liberar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!res.ok) throw new Error('Erro ao limpar mesa no servidor');
+
+        // 🔹 Limpa cache local
+        pedidosPorMesa[mesaNum] = [];
+
+        // 🔹 Atualiza interface
+        mesaAtual.classList.remove('ocupada', 'fechamento');
+        mesaAtual.classList.add('livre');
+        fecharMesaBtn.classList.remove('fechada');
+
+        listaPedidos.innerHTML = '<p>Nenhum pedido ainda.</p>';
+        totaisDiv.innerHTML = '';
+        mesaPagaBtn.classList.add('hidden');
+        fechamentoSection.classList.add('hidden');
+        modal.style.display = 'none';
+
+        alert(`✅ Mesa ${mesaNum} paga e liberada com sucesso!`);
+      } catch (err) {
+        console.error('❌ Erro ao limpar mesa:', err);
+        alert('Erro ao liberar mesa no servidor.');
+      }
     });
 
     // Fecha modal clicando fora
