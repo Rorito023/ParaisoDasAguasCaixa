@@ -441,27 +441,46 @@
 
       atualizarListaPedidos(mesaNum);
 
-      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco) E USA O RETORNO
+      // 🔹 ENVIA O PEDIDO PARA O SERVIDOR (salvar no banco) — agora com verificação de item duplicado
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
-        });
+        // Se já existir um pedido igual (mesmo produto + observação), atualiza quantidade em vez de criar novo
+        const pedidoExistente = pedidosPorMesa[mesaNum]?.find(
+          p => p.produto === nomePedido && p.obs === obs
+        );
 
-        if (!res.ok) throw new Error('Falha ao salvar pedido no servidor');
+        if (pedidoExistente && pedidoExistente.id) {
+          // 🔸 Atualiza a quantidade no banco (PUT)
+          const novaQtd = pedidoExistente.quantidade + quantidade;
 
-        // servidor retorna o pedido criado (com id)
-        const novoPedido = await res.json();
+          const res = await fetch(`${PRINT_SERVER_BASE}/pedidos/${pedidoExistente.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantidade: novaQtd })
+          });
 
-        // adiciona o pedido retornado (com id) no array local
-        pedidosPorMesa[mesaNum] = pedidosPorMesa[mesaNum] || [];
-        pedidosPorMesa[mesaNum].push(novoPedido);
+          if (!res.ok) throw new Error('Falha ao atualizar pedido existente no servidor');
 
-        console.log('✅ Pedido salvo no servidor e adicionado localmente:', novoPedido);
+          pedidoExistente.quantidade = novaQtd; // Atualiza localmente também
+          console.log(`🔁 Quantidade atualizada no servidor: ${nomePedido} -> ${novaQtd}`);
+        } else {
+          // 🔸 Cria novo pedido (POST)
+          const res = await fetch(`${PRINT_SERVER_BASE}/mesas/${mesaNum}/pedidos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ produto: nomePedido, quantidade, preco, obs })
+          });
+
+          if (!res.ok) throw new Error('Falha ao salvar novo pedido no servidor');
+
+          const novoPedido = await res.json();
+          pedidosPorMesa[mesaNum] = pedidosPorMesa[mesaNum] || [];
+          pedidosPorMesa[mesaNum].push(novoPedido);
+
+          console.log('✅ Novo pedido salvo no servidor e adicionado localmente:', novoPedido);
+        }
       } catch (err) {
-        console.error('❌ Erro ao enviar pedido ao servidor:', err);
-        alert('Falha ao salvar o pedido no servidor.');
+        console.error('❌ Erro ao enviar/atualizar pedido no servidor:', err);
+        alert('Falha ao salvar ou atualizar o pedido no servidor.');
         return; // evita continuar se falhar o salvamento
       }
 
