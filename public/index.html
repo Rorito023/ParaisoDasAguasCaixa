@@ -388,9 +388,16 @@
 
     // limita input quantidade
     quantidadeInput.addEventListener('input', () => {
-      let v = parseInt(quantidadeInput.value || '1', 10);
+      let v = quantidadeInput.value.trim();
+
+      // Permite apagar o valor temporariamente (campo vazio)
+      if (v === '') return;
+
+      v = parseInt(v, 10);
+
       if (isNaN(v) || v < 1) v = 1;
       if (v > 300) v = 300;
+
       quantidadeInput.value = v;
     });
 
