@@ -433,9 +433,8 @@
         p => p.produto === nomePedido && p.obs === obs
       );
 
-      if (pedidoExistente) {
-        pedidoExistente.quantidade += quantidade;
-      } else {
+      // não soma localmente — deixa o servidor cuidar disso
+      if (!pedidoExistente) {
         pedidosPorMesa[mesaNum].push({ produto: nomePedido, quantidade, preco, obs });
       }
 
