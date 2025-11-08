@@ -256,6 +256,30 @@
       grid.appendChild(mesa);
     }
 
+    // Atualiza as cores das mesas consultando o servidor
+    async function atualizarCoresDasMesas() {
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/mesas/status`);
+        if (!res.ok) throw new Error('Erro ao buscar status das mesas');
+        const statusMesas = await res.json(); // ex: { '1': 'livre', '2': 'ocupada', ... }
+
+        document.querySelectorAll('.mesa').forEach(mesaEl => {
+          const mesaNum = parseInt(mesaEl.textContent, 10);
+          mesaEl.classList.remove('livre', 'ocupada', 'fechamento');
+
+          if (statusMesas && statusMesas[mesaNum] === 'ocupada') {
+            mesaEl.classList.add('ocupada');
+          } else {
+            mesaEl.classList.add('livre');
+          }
+        });
+      } catch (err) {
+        console.error('❌ Erro ao atualizar cores das mesas:', err);
+      }
+    }
+
+    atualizarCoresDasMesas();
+
     // abrir mesa
     async function abrirMenuMesa(mesa, numero) {
       mesaAtual = mesa;
@@ -291,6 +315,7 @@
 
         pedidosPorMesa[numero] = data;
         atualizarListaPedidos(numero);
+        atualizarCoresDasMesas();
       } catch (err) {
         console.error('❌ Erro ao carregar pedidos:', err);
       }
@@ -529,6 +554,7 @@
 
       imprimirBtn.classList.remove('hidden');
       imprimirBtn.onclick = () => sendComandaPrintRequest(numero);
+      atualizarCoresDasMesas();
     }
 
     // Função para remover item do pedido

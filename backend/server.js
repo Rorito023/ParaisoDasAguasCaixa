@@ -155,6 +155,21 @@ app.post("/api/mesas/:mesa/pedidos", async (req, res) => {
   }
 });
 
+// 🔹 Rota para obter o status de todas as mesas
+app.get("/api/mesas/status", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT numero, status FROM mesas ORDER BY numero ASC");
+    const statusMesas = {};
+    result.rows.forEach(mesa => {
+      statusMesas[mesa.numero] = mesa.status;
+    });
+    res.json(statusMesas);
+  } catch (err) {
+    console.error("❌ Erro ao buscar status das mesas:", err);
+    res.status(500).json({ error: "Erro ao buscar status das mesas" });
+  }
+});
+
 
 // Remover pedido
 app.delete("/api/pedidos/:id", async (req, res) => {
