@@ -215,6 +215,22 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
   }
 });
 
+// Rotas de Impressão (Cozinha e Comanda) ------------------------
+
+// Rota para imprimir item individual (chamada no adicionarBtn)
+app.post("/api/imprimir", (req, res) => {
+  console.log("📥 Recebido pedido para imprimir item:", req.body);
+  // 💡 Lógica: Aqui você integraria com o serviço de impressão física (e.g., thermal printer API)
+  res.status(200).json({ message: "Item enviado para impressão" });
+});
+
+// Rota para imprimir comanda completa (chamada no imprimirBtn)
+app.post("/api/imprimir_comanda", (req, res) => {
+  console.log("🧾 Recebida requisição para imprimir comanda da mesa:", req.body.mesa);
+  // 💡 Lógica: Aqui você integraria com o serviço de impressão física para a conta final
+  res.status(200).json({ message: "Comanda enviada para impressão" });
+});
+
 // Middleware simples para checar token (placeholder)
 function verificarAutenticacao(req, res, next) {
   next();
