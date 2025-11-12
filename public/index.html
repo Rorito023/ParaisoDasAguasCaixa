@@ -17,6 +17,7 @@
     <p><strong>🧾 Total 10%:</strong> R$ <span id="totalTaxa">0.00</span></p>
     <p><strong>📊 Total com 10%:</strong> R$ <span id="totalFinal">0.00</span></p>
     <button id="encerrarDiaBtn">Encerrar Dia</button>
+    <button id="gerarPdfBtn" style="margin-top: 10px; background-color: #007bff;">📄 Gerar PDF</button>
   </div>
 
   <div class="modal" id="menuModal">
@@ -795,17 +796,18 @@
     const totalTaxaEl = document.getElementById('totalTaxa');
     const totalFinalEl = document.getElementById('totalFinal');
     const encerrarDiaBtn = document.getElementById('encerrarDiaBtn');
+    const gerarPdfBtn = document.getElementById('gerarPdfBtn'); // novo botão
 
     // 🔹 Atualiza painel com dados do servidor
     async function atualizarPainelFinanceiro() {
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/api/relatorios`);
+        const res = await fetch(`/api/relatorios`);
         if (!res.ok) throw new Error("Erro ao buscar relatórios");
 
         const relatorios = await res.json();
         if (relatorios.length === 0) return;
 
-        const ultimo = relatorios[relatorios.length - 1];
+        const ultimo = relatorios[0]; // último relatório é o mais recente
         totalBrutoEl.textContent = parseFloat(ultimo.total_bruto).toFixed(2);
         totalTaxaEl.textContent = parseFloat(ultimo.total_taxa).toFixed(2);
         totalFinalEl.textContent = parseFloat(ultimo.total_final).toFixed(2);
@@ -819,10 +821,12 @@
       if (!confirm("Deseja realmente encerrar o dia? Isso salvará o relatório e limpará todas as mesas.")) return;
 
       try {
-        const res = await fetch(`${PRINT_SERVER_BASE}/api/encerrar-dia`, { method: 'POST' });
+        const res = await fetch(`/api/encerrar-dia`, { method: 'POST' });
         if (!res.ok) throw new Error("Erro ao encerrar dia");
 
-        alert("✅ Dia encerrado e relatório salvo com sucesso!");
+        const data = await res.json();
+        alert(`✅ Dia encerrado!\n\nTotal bruto: R$ ${data.totalBruto.toFixed(2)}\nTotal 10%: R$ ${data.totalTaxa.toFixed(2)}\nTotal final: R$ ${data.totalFinal.toFixed(2)}`);
+
         totalBrutoEl.textContent = "0.00";
         totalTaxaEl.textContent = "0.00";
         totalFinalEl.textContent = "0.00";
@@ -831,6 +835,11 @@
         console.error("❌ Erro ao encerrar dia:", err);
         alert("Erro ao encerrar dia no servidor.");
       }
+    });
+
+    // 🔹 Gerar PDF do relatório mais recente
+    gerarPdfBtn.addEventListener('click', () => {
+      window.open('/api/relatorios/pdf', '_blank');
     });
 
     // Inicializa painel ao abrir página

@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool, initDB } from "./db.js";
 import dotenv from "dotenv";
+import PDFDocument from "pdfkit";
 
 dotenv.config();
 
@@ -88,6 +89,7 @@ app.get("/api/mesas", async (req, res) => {
     const result = await pool.query("SELECT * FROM mesas ORDER BY numero ASC");
     res.json(result.rows);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao buscar mesas" });
   }
 });
@@ -118,6 +120,7 @@ app.post("/api/pedidos", async (req, res) => {
     await pool.query("UPDATE mesas SET status = 'ocupada' WHERE numero = $1", [mesa]);
     res.json({ message: "Pedido adicionado" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao adicionar pedido" });
   }
 });
@@ -161,6 +164,7 @@ app.delete("/api/pedidos/:id", async (req, res) => {
     await pool.query("DELETE FROM pedidos WHERE id = $1", [id]);
     res.json({ message: "Pedido removido" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao remover pedido" });
   }
 });
@@ -190,6 +194,7 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
     await pool.query("UPDATE mesas SET status = 'livre' WHERE numero = $1", [mesa]);
     res.json({ message: "Mesa liberada" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao liberar mesa" });
   }
 });
@@ -202,15 +207,18 @@ app.post("/api/mesas/:mesa/liberar", async (req, res) => {
 app.post("/api/encerrar-dia", async (req, res) => {
   try {
     const pedidosResult = await pool.query("SELECT preco, quantidade FROM pedidos");
-    if (pedidosResult.rows.length === 0)
+    if (pedidosResult.rows.length === 0) {
+      // Não há pedidos, gravamos relatório com zeros (opcional) ou retornamos 400.
+      // Aqui retornamos 400 para avisar que não havia vendas no dia.
       return res.status(400).json({ message: "Nenhum pedido encontrado para encerrar o dia." });
+    }
 
     const totalBruto = pedidosResult.rows.reduce(
       (acc, p) => acc + Number(p.preco) * p.quantidade,
       0
     );
-    const totalTaxa = totalBruto * 0.1;
-    const totalFinal = totalBruto + totalTaxa;
+    const totalTaxa = Number((totalBruto * 0.1).toFixed(2));
+    const totalFinal = Number((totalBruto + totalTaxa).toFixed(2));
 
     await pool.query(
       `INSERT INTO relatorios_diarios (total_bruto, total_taxa, total_final)
@@ -244,6 +252,62 @@ app.get("/api/relatorios", async (req, res) => {
   } catch (err) {
     console.error("❌ Erro ao buscar relatórios:", err);
     res.status(500).json({ error: "Erro ao buscar relatórios." });
+  }
+});
+
+/* ============================================================
+   GERAR RELATÓRIO PDF (ÚLTIMO RELATÓRIO)
+============================================================ */
+
+app.get("/api/relatorios/pdf", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT TO_CHAR(data_relatorio, 'DD/MM/YYYY') AS data_relatorio,
+             total_bruto, total_taxa, total_final,
+             TO_CHAR(criado_em, 'HH24:MI') AS hora_fechamento
+      FROM relatorios_diarios
+      ORDER BY data_relatorio DESC, id DESC
+      LIMIT 1;
+    `);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send("Nenhum relatório encontrado.");
+    }
+
+    const rel = result.rows[0];
+
+    // Cabeçalhos
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="relatorio_${rel.data_relatorio}.pdf"`);
+
+    // Cria PDF
+    const doc = new PDFDocument({ margin: 50 });
+    // Pipe para resposta (stream direto)
+    doc.pipe(res);
+
+    doc.fontSize(20).text("📊 Relatório Diário — Paraíso das Águas", { align: "center" });
+    doc.moveDown();
+
+    doc.fontSize(14).text(`Data: ${rel.data_relatorio}`);
+    doc.text(`Hora de Fechamento: ${rel.hora_fechamento}`);
+    doc.moveDown();
+
+    // Garantir números em float
+    const bruto = Number(rel.total_bruto) || 0;
+    const taxa = Number(rel.total_taxa) || 0;
+    const finalV = Number(rel.total_final) || 0;
+
+    doc.fontSize(16).text(`💰 Total Bruto: R$ ${bruto.toFixed(2)}`);
+    doc.text(`🧾 Total 10%: R$ ${taxa.toFixed(2)}`);
+    doc.text(`📊 Total com 10%: R$ ${finalV.toFixed(2)}`);
+    doc.moveDown(2);
+
+    doc.fontSize(12).text("Relatório gerado automaticamente pelo sistema de controle de mesas.", { align: "center" });
+
+    doc.end(); // finaliza documento e fecha pipe
+  } catch (err) {
+    console.error("❌ Erro ao gerar PDF:", err);
+    res.status(500).send("Erro ao gerar relatório PDF.");
   }
 });
 
@@ -287,7 +351,6 @@ app.get("/register.html", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
-
 
 //├── backend/
 //│   ├── server.js ✅
