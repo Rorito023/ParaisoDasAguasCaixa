@@ -43,6 +43,18 @@ export async function initDB() {
     );
   `);
 
+  // 🧾 Tabela de relatórios diários
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS relatorios_diarios (
+      id SERIAL PRIMARY KEY,
+      data_relatorio DATE DEFAULT CURRENT_DATE,
+      total_bruto NUMERIC(12,2) NOT NULL,
+      total_taxa NUMERIC(12,2) NOT NULL,
+      total_final NUMERIC(12,2) NOT NULL,
+      criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   // Inserir 100 mesas se não existirem
   for (let i = 1; i <= 100; i++) {
     await pool.query(

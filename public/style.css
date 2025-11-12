@@ -367,6 +367,91 @@ h1 {
   transform: scale(1.05);
 }
 
+/* ===== PAINEL FINANCEIRO ===== */
+#painelFinanceiro {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  padding: 20px 25px;
+  width: 260px;
+  z-index: 999;
+  animation: fadeInPainel 0.8s ease forwards;
+  opacity: 0;
+  border-top: 5px solid #007bff;
+}
+
+@keyframes fadeInPainel {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); opacity: 1; }
+}
+
+#painelFinanceiro h2 {
+  text-align: center;
+  color: #0241ff;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 5px;
+}
+
+#painelFinanceiro p {
+  font-size: 15px;
+  margin: 10px 0;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#painelFinanceiro span {
+  font-weight: bold;
+  color: #007bff;
+}
+
+#encerrarDiaBtn {
+  display: block;
+  width: 100%;
+  margin-top: 15px;
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  animation: pulseIn 1s ease forwards;
+}
+
+#encerrarDiaBtn:hover {
+  background-color: #b02a37;
+  transform: scale(1.05);
+}
+
+/* Sutil efeito de destaque ao atualizar valores */
+#painelFinanceiro span.updated {
+  animation: piscarValor 0.5s ease;
+}
+
+@keyframes piscarValor {
+  0% { color: #28a745; }
+  100% { color: #007bff; }
+}
+
+/* Responsividade para o painel */
+@media (max-width: 900px) {
+  #painelFinanceiro {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    margin-top: 20px;
+  }
+}
+
 /* ====== RESPONSIVIDADE ====== */
 @media (max-width: 768px) {
   h1 { font-size: 1.6rem; }

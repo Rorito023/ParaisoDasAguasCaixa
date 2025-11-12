@@ -10,6 +10,15 @@
   <h1>Mesas Paraiso das Aguas</h1>
   <div class="grid" id="grid"></div>
 
+  <!-- Painel financeiro lateral -->
+  <div id="painelFinanceiro">
+    <h2>Controle Financeiro</h2>
+    <p><strong>💰 Total do Dia:</strong> R$ <span id="totalBruto">0.00</span></p>
+    <p><strong>🧾 Total 10%:</strong> R$ <span id="totalTaxa">0.00</span></p>
+    <p><strong>📊 Total com 10%:</strong> R$ <span id="totalFinal">0.00</span></p>
+    <button id="encerrarDiaBtn">Encerrar Dia</button>
+  </div>
+
   <div class="modal" id="menuModal">
     <div class="modal-content">
       <button class="close-btn" id="closeModal">X</button>
@@ -532,7 +541,7 @@
             subtotal: (pedido.preco * pedido.quantidade)
           })
         });
-        console.log('Impressão enviada (item) para a cozinha:', mesaNum, pedido.produto);
+        console.log('Impressão enviada (item):', mesaNum, pedido.produto);
       } catch (err) {
         console.warn('Falha ao contatar servidor de impressão:', err);
       }
@@ -780,6 +789,52 @@
       pedidosPorMesa[mesaNum].splice(index, 1);
       atualizarListaPedidos(mesaNum);
     }
+    
+    // =================== PAINEL FINANCEIRO ===================
+    const totalBrutoEl = document.getElementById('totalBruto');
+    const totalTaxaEl = document.getElementById('totalTaxa');
+    const totalFinalEl = document.getElementById('totalFinal');
+    const encerrarDiaBtn = document.getElementById('encerrarDiaBtn');
+
+    // 🔹 Atualiza painel com dados do servidor
+    async function atualizarPainelFinanceiro() {
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/api/relatorios`);
+        if (!res.ok) throw new Error("Erro ao buscar relatórios");
+
+        const relatorios = await res.json();
+        if (relatorios.length === 0) return;
+
+        const ultimo = relatorios[relatorios.length - 1];
+        totalBrutoEl.textContent = parseFloat(ultimo.total_bruto).toFixed(2);
+        totalTaxaEl.textContent = parseFloat(ultimo.total_taxa).toFixed(2);
+        totalFinalEl.textContent = parseFloat(ultimo.total_final).toFixed(2);
+      } catch (err) {
+        console.warn("Erro ao atualizar painel financeiro:", err);
+      }
+    }
+
+    // 🔹 Encerrar dia manualmente
+    encerrarDiaBtn.addEventListener('click', async () => {
+      if (!confirm("Deseja realmente encerrar o dia? Isso salvará o relatório e limpará todas as mesas.")) return;
+
+      try {
+        const res = await fetch(`${PRINT_SERVER_BASE}/api/encerrar-dia`, { method: 'POST' });
+        if (!res.ok) throw new Error("Erro ao encerrar dia");
+
+        alert("✅ Dia encerrado e relatório salvo com sucesso!");
+        totalBrutoEl.textContent = "0.00";
+        totalTaxaEl.textContent = "0.00";
+        totalFinalEl.textContent = "0.00";
+        atualizarCoresDasMesas();
+      } catch (err) {
+        console.error("❌ Erro ao encerrar dia:", err);
+        alert("Erro ao encerrar dia no servidor.");
+      }
+    });
+
+    // Inicializa painel ao abrir página
+    atualizarPainelFinanceiro();
 
     // Exemplo de payloads enviados ao servidor:
     // POST /imprimir  -> { tipo: 'item', mesa: '12', produto: 'Refrigerante Lata', quantidade: 2, obs: 'sem gelo', subtotal: 14.00 }
